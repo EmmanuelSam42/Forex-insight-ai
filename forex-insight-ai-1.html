@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Forex Insight AI v7.3 Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        :root {
+            --bg: #04060d; --s1: #080e1a; --s2: #0d1525; --s3: #111d30; --s4: #16243b;
+            --bd: #1e3050; --bd2: #2a4060;
+            --acc: #00f0c8; --acc2: #6c3fff; --acc3: #ff6b35;
+            --buy: #06d672; --sell: #ff2d55; --amber: #ffa500;
+            --txt: #c8d8f0; --muted: #4a6890; --dim: #1a2d48;
+            --fh: 'Space Grotesk', sans-serif;
+            --fm: 'JetBrains Mono', monospace;
+            --fd: 'Bebas Neue', sans-serif;
+        }
+        body.lm {
+            --bg: #f0f4f8; --s1: #ffffff; --s2: #e8edf5; --s3: #d8e2ee; --s4: #c8d4e6;
+            --bd: #b0c4dc; --bd2: #8aaac8;
+            --acc: #0088aa; --acc2: #5500dd; --acc3: #dd4400;
+            --buy: #007733; --sell: #cc0022; --amber: #bb6600;
+            --txt: #081422; --muted: #2a5070; --dim: #d0dcea;
+        }
+        body {
+            background: var(--bg); color: var(--txt); font-family: var(--fh);
+            margin: 0; padding: 0; min-height: 100vh; transition: background 0.2s, color 0.2s;
+        }
+        #app { display: flex; flex-direction: column; min-height: 100vh; }
+        .header {
+            background: var(--s1); border-bottom: 1px solid var(--bd);
+            display: flex; align-items: center; padding: 0 16px; height: 56px; gap: 12px;
+        }
+        .logo-box {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--acc), var(--acc2));
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--fd); font-size: 16px; color: #020c18;
+        }
+        .ticker-wrap {
+            background: var(--s2); border-bottom: 1px solid var(--bd);
+            overflow: hidden; display: flex; align-items: center; height: 32px;
+        }
+        .ticker-inner {
+            display: flex; white-space: nowrap;
+            animation: scroll 60s linear infinite;
+        }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .body { display: flex; flex: 1; min-height: calc(100vh - 112px); }
+        .sidebar {
+            width: 200px; background: var(--s1); border-right: 1px solid var(--bd);
+            display: flex; flex-direction: column; padding: 12px; gap: 8px;
+        }
+        .nav-item {
+            background: transparent; border: none; color: var(--muted);
+            padding: 10px; text-align: left; cursor: pointer;
+            font-family: var(--fh); font-size: 13px; border-radius: 6px;
+            transition: 0.2s; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-item.active { color: var(--acc); background: rgba(0, 240, 200, 0.1); }
+        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .footer {
+            background: var(--s1); border-top: 1px solid var(--bd);
+            display: flex; align-items: center; padding: 0 16px; height: 24px;
+            font-family: var(--fm); font-size: 9px; color: var(--muted);
+        }
+        .card { background: var(--s1); border: 1px solid var(--bd); border-radius: 12px; padding: 16px; }
+        .card2 { background: var(--s2); border: 1px solid var(--bd); border-radius: 8px; padding: 10px; }
+        .grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+        .btn {
+            padding: 6px 12px; border-radius: 6px; cursor: pointer;
+            font-family: var(--fh); font-weight: 600; font-size: 12px;
+            border: none; transition: 0.2s;
+        }
+        .btn-acc { background: var(--acc); color: #020c18; }
+        .btn-ghost { background: var(--s3); color: var(--txt); border: 1px solid var(--bd); }
+        .pair-pill {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px; border-radius: 6px; cursor: pointer;
+            background: var(--s2); border: 1px solid var(--bd); margin-bottom: 4px;
+            font-family: var(--fm); font-size: 11px;
+        }
+        .pair-pill.active { border-color: var(--acc); background: rgba(0, 240, 200, 0.1); }
+        .sig-card {
+            border-radius: 12px; padding: 16px; border: 1px solid var(--bd);
+            background: var(--s1); transition: 0.3s;
+        }
+        .sig-card.buy { border-left: 4px solid var(--buy); background: linear-gradient(90deg, rgba(6,214,114,0.05), transparent); }
+        .sig-card.sell { border-left: 4px solid var(--sell); background: linear-gradient(90deg, rgba(255,45,85,0.05), transparent); }
+        .pill { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
+        .pill-buy { background: rgba(6,214,114,0.2); color: var(--buy); }
+        .pill-sell { background: rgba(255,45,85,0.2); color: var(--sell); }
+        .conf-bar { height: 4px; background: var(--s3); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .conf-fill { height: 100%; transition: width 0.5s ease; }
+
+        /* AI Insight tab styles */
+        .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .insight-met { background: var(--s2); border: 1px solid var(--bd); border-radius: 8px; padding: 12px 14px; }
+        .insight-met-label { font-size: 9px; font-family: var(--fm); color: var(--muted); margin-bottom: 4px; letter-spacing: .06em; }
+        .insight-met-val { font-size: 20px; font-weight: 600; font-family: var(--fm); }
+        .pair-brief-card { background: var(--s2); border: 1px solid var(--bd); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+        .pair-brief-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .brief-badge { font-size: 9px; font-weight: bold; padding: 3px 8px; border-radius: 4px; font-family: var(--fm); }
+        .brief-badge.bear { background: rgba(255,45,85,0.2); color: var(--sell); }
+        .brief-badge.bull { background: rgba(6,214,114,0.2); color: var(--buy); }
+        .brief-badge.neutral { background: rgba(255,165,0,0.2); color: var(--amber); }
+        .brief-row { display: flex; justify-content: space-between; font-size: 11px; font-family: var(--fm); margin-bottom: 5px; }
+        .brief-row span:first-child { color: var(--muted); }
+        .brief-rr { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; font-family: var(--fm); padding-top: 8px; border-top: 1px solid var(--bd); margin-top: 4px; }
+        .ai-response-box { background: var(--s2); border: 1px solid var(--bd2); border-radius: 10px; padding: 16px; margin-bottom: 16px; min-height: 80px; font-size: 13px; line-height: 1.7; color: var(--txt); }
+        .ai-response-box.loading { color: var(--muted); font-style: italic; }
+        .rm-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .rm-label { font-size: 11px; font-family: var(--fm); color: var(--muted); min-width: 170px; }
+        .rm-val { font-size: 12px; font-weight: 600; font-family: var(--fm); color: var(--acc); min-width: 80px; text-align: right; }
+        .rm-inp { flex: 1; background: var(--s3); border: 1px solid var(--bd); color: var(--txt); padding: 6px 8px; border-radius: 5px; font-family: var(--fm); font-size: 12px; }
+        .rm-inp:focus { outline: none; border-color: var(--acc); }
+        .rm-slider { flex: 1; accent-color: var(--acc); }
+        .rm-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .rm-met { background: var(--s3); border-radius: 6px; padding: 10px 12px; }
+        .rm-met-lbl { font-size: 9px; font-family: var(--fm); color: var(--muted); margin-bottom: 3px; }
+        .rm-met-val { font-size: 18px; font-weight: 600; font-family: var(--fm); }
+        .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .rule-box { background: var(--s2); border: 1px solid var(--bd); border-radius: 8px; padding: 12px; }
+        .rule-title { font-size: 11px; font-weight: 600; color: var(--acc); margin-bottom: 4px; font-family: var(--fm); }
+        .rule-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+        .section-head { font-family: var(--fd); font-size: 18px; color: var(--acc); margin: 0 0 14px 0; letter-spacing: 1px; }
+        .week-alert { border-radius: 8px; padding: 10px 14px; font-size: 12px; line-height: 1.6; margin-bottom: 14px; border-left: 3px solid; }
+        .week-alert.warn { background: rgba(255,165,0,0.1); color: var(--amber); border-color: var(--amber); }
+        .week-alert.danger { background: rgba(255,45,85,0.1); color: var(--sell); border-color: var(--sell); }
+        .week-alert.good { background: rgba(6,214,114,0.1); color: var(--buy); border-color: var(--buy); }
+        .ai-ask-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .ai-ask-inp { flex: 1; background: var(--s2); border: 1px solid var(--bd); color: var(--txt); padding: 10px 14px; border-radius: 8px; font-family: var(--fh); font-size: 13px; }
+        .ai-ask-inp:focus { outline: none; border-color: var(--acc); }
+        .tf-selector { display: flex; gap: 4px; flex-wrap: wrap; }
+        .tf-btn { background: var(--s3); border: 1px solid var(--bd); color: var(--muted); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-family: var(--fm); font-size: 10px; transition: 0.2s; }
+        .tf-btn.active, .tf-btn:hover { background: var(--acc); color: #020c18; border-color: var(--acc); }
+        .session-monitor { background: var(--s2); border: 1px solid var(--bd); border-radius: 8px; padding: 10px; margin-top: 10px; }
+        .session-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 10px; font-family: var(--fm); }
+        .session-label { color: var(--muted); }
+        .session-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bd); }
+        .session-dot.active { background: var(--buy); box-shadow: 0 0 6px var(--buy); }
+
+        .modal-bg {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal {
+            background: var(--s1); border: 1px solid var(--bd2); border-radius: 16px;
+            padding: 24px; width: 350px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .inp {
+            width: 100%; background: var(--s2); border: 1px solid var(--bd);
+            color: var(--txt); padding: 10px; border-radius: 6px; font-family: var(--fm);
+            margin: 10px 0 20px 0; outline: none;
+        }
+        .inp:focus { border-color: var(--acc); }
+
+        /* ── Hover effects ── */
+        .nav-item:hover:not(.active) {
+            color: var(--txt);
+            background: var(--s3);
+            padding-left: 14px;
+        }
+        .nav-item { transition: color 0.18s, background 0.18s, padding-left 0.18s; }
+
+        .btn-acc:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0, 240, 200, 0.35);
+        }
+        .btn-ghost:hover {
+            background: var(--s4);
+            border-color: var(--bd2);
+            color: var(--acc);
+            transform: translateY(-1px);
+        }
+        .btn { transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s, filter 0.15s; }
+        .btn:active { transform: translateY(0) !important; filter: brightness(0.92); }
+
+        .tf-btn:hover:not(.active) {
+            background: var(--s4);
+            color: var(--txt);
+            border-color: var(--acc);
+        }
+
+        .card { transition: box-shadow 0.2s, border-color 0.2s; }
+        .card:has(+ .card):hover,
+        .card2:hover {
+            border-color: var(--bd2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+        }
+
+        .sig-card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+        .sig-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.22);
+            border-color: var(--acc);
+        }
+
+        .pair-pill { transition: background 0.15s, border-color 0.15s, transform 0.15s; }
+        .pair-pill:hover:not(.active) {
+            background: var(--s3);
+            border-color: var(--bd2);
+            transform: translateX(2px);
+        }
+
+        .pair-brief-card { transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s; }
+        .pair-brief-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            border-color: var(--acc);
+        }
+
+        .insight-met { transition: background 0.15s, border-color 0.15s, transform 0.15s; }
+        .insight-met:hover {
+            background: var(--s3);
+            border-color: var(--bd2);
+            transform: translateY(-1px);
+        }
+
+        .rm-met { transition: background 0.15s, transform 0.15s; }
+        .rm-met:hover {
+            background: var(--s4);
+            transform: translateY(-1px);
+        }
+
+        .rule-box { transition: background 0.15s, border-color 0.15s, transform 0.15s; }
+        .rule-box:hover {
+            background: var(--s3);
+            border-color: var(--acc);
+            transform: translateY(-1px);
+        }
+
+        .logo-box { transition: transform 0.2s, box-shadow 0.2s; cursor: default; }
+        .logo-box:hover {
+            transform: rotate(8deg) scale(1.08);
+            box-shadow: 0 0 16px rgba(0,240,200,0.4);
+        }
+
+        .session-item { transition: background 0.15s; border-radius: 4px; padding: 4px 4px; }
+        .session-item:hover { background: var(--s3); }
+
+        .week-alert { transition: transform 0.15s, box-shadow 0.15s; }
+        .week-alert:hover {
+            transform: translateX(2px);
+            box-shadow: 2px 4px 14px rgba(0,0,0,0.15);
+        }
+
+        .ai-response-box { transition: border-color 0.2s; }
+        .ai-response-box:hover { border-color: var(--bd2); }
+
+        .rm-inp:hover { border-color: var(--bd2); }
+        .rm-inp { transition: border-color 0.15s; }
+
+        /* Ticker pause on hover */
+        .ticker-wrap:hover .ticker-inner { animation-play-state: paused; }
+
+        /* Pair grid cards (inline style — target via attribute) */
+        [onclick*="S.pair="] { transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s; }
+        [onclick*="S.pair="]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        /* MTF signal boxes */
+        [style*="background:var(--s3); border-radius:8px; padding:10px; text-align:center"] {
+            transition: background 0.15s, transform 0.15s;
+        }
+    </style>
+</head>
+<body id="body-root">
+    <div id="app"></div>
+    <div id="modal-root"></div>
+    <div id="toast-root" style="position:fixed; top:60px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:8px;"></div>
+
+    <script>
+        'use strict';
+        const PAIRS = {
+            EURUSD:{pip:.0001,d:5,sp:.00012,sess:'EU/US',flag:'🇪🇺🇺🇸',base:1.16500},
+            GBPUSD:{pip:.0001,d:5,sp:.00018,sess:'UK/US',flag:'🇬🇧🇺🇸',base:1.34500},
+            USDJPY:{pip:.01,  d:3,sp:.018,  sess:'AS/US',flag:'🇺🇸🇯🇵',base:158.600},
+            AUDUSD:{pip:.0001,d:5,sp:.0002, sess:'AS/US',flag:'🇦🇺🇺🇸',base:0.72350},
+            USDCAD:{pip:.0001,d:5,sp:.0002, sess:'US/CA',flag:'🇺🇸🇨🇦',base:1.35700},
+            USDCHF:{pip:.0001,d:5,sp:.0002, sess:'EU/US',flag:'🇺🇸🇨🇭',base:0.88900},
+            NZDUSD:{pip:.0001,d:5,sp:.00025,sess:'AS/US',flag:'🇳🇿🇺🇸',base:0.65800},
+            EURGBP:{pip:.0001,d:5,sp:.00016,sess:'EU',   flag:'🇪🇺🇬🇧',base:0.86250},
+        };
+        const SYMS = Object.keys(PAIRS);
+
+        const S = {
+            tab: 'dashboard', pair: 'EURUSD', theme: 'dark',
+            timeframe: '15m',
+            prices: {}, candles: {},
+            src: 'simulation',
+            provider: localStorage.getItem('fx_provider') || 'polygon',
+            apiKey: localStorage.getItem('polygon_key') || '',
+            oandaToken: localStorage.getItem('oanda_token') || '',
+            oandaAccountId: localStorage.getItem('oanda_account_id') || '',
+            btResult: null, btRunning: false
+        };
+        const TFs = ['1m', '5m', '15m', '1h', '4h', '1d', '1w', '1M', '1Y'];
+
+        function initData() {
+            SYMS.forEach(s => {
+                const base = PAIRS[s].base;
+                S.prices[s] = { bid: base, ask: base + PAIRS[s].sp, mid: base, chg: 0, pct: 0, vol: 0, src: 'seed' };
+                S.candles[s] = {};
+                TFs.forEach(tf => {
+                    S.candles[s][tf] = _genSeedCandles(s, base, tf);
+                });
+            });
+        }
+
+        function _genSeedCandles(sym, base, tf, n=200) {
+            let p = base;
+            const vol = PAIRS[sym].pip * 4;
+            const candles = [];
+            const interval = getTfMs(tf);
+            for(let i=0; i<n; i++) {
+                const o = p, d = (Math.random()-.5)*vol*2, c = o+d;
+                p = c;
+                candles.push({ t: Date.now()-(n-i)*interval, o, h: Math.max(o,c)+0.0001, l: Math.min(o,c)-0.0001, c, v: Math.floor(Math.random()*1000) });
+            }
+            return candles;
+        }
+
+        function getTfMs(tf) {
+            const map = { '1m': 60000, '5m': 300000, '15m': 900000, '1h': 3600000, '4h': 14400000, '1d': 86400000, '1w': 604800000, '1M': 2592000000, '1Y': 31536000000 };
+            return map[tf] || 60000;
+        }
+
+        const _ema = (d, p) => {
+            const k = 2/(p+1);
+            const res = [];
+            for(let i=0; i<d.length; i++) {
+                if(i===0) res.push(d[i]);
+                else res.push(d[i]*k + res[i-1]*(1-k));
+            }
+            return res;
+        };
+        const _sma = (d, p) => {
+            if (d.length < p) return null;
+            let sum = 0;
+            for(let i = d.length - p; i < d.length; i++) sum += d[i];
+            return sum / p;
+        };
+        const _stdDev = (d, p, sma) => {
+            if (d.length < p) return null;
+            let sumSq = 0;
+            for(let i = d.length - p; i < d.length; i++) sumSq += Math.pow(d[i] - sma, 2);
+            return Math.sqrt(sumSq / p);
+        };
+        const _rsi = (c) => {
+            if(c.length < 15) return 50;
+            let gains = 0, losses = 0;
+            for(let i=c.length-14; i<c.length; i++) {
+                let diff = c[i] - c[i-1];
+                diff > 0 ? gains += diff : losses -= diff;
+            }
+            return 100 - (100 / (1 + (gains/14) / (losses/14 || 1)));
+        };
+
+        function computeSignal(sym, tf = S.timeframe) {
+            const candles = S.candles[sym][tf];
+            const cl = candles.map(c => c.c);
+            if (cl.length < 200) return { dir: 'NEUTRAL', conf: 0, rsi: 50, last: cl[cl.length-1] || 0 };
+
+            const last = cl[cl.length-1];
+            const rsi = _rsi(cl);
+            const ema200 = _ema(cl, 200).pop();
+            const sma20 = _sma(cl, 20);
+            const std = _stdDev(cl, 20, sma20);
+
+            const upperBand = sma20 + (std * 2);
+            const lowerBand = sma20 - (std * 2);
+
+            let score = 0;
+            let direction = 'NEUTRAL';
+
+            const isBullishTrend = last > ema200;
+            const isBearishTrend = last < ema200;
+            const isAtValueLow = last <= lowerBand * 1.0005;
+            const isAtValueHigh = last >= upperBand * 0.9995;
+            const isRSIOversold = rsi < 35;
+            const isRSIOverbought = rsi > 65;
+
+            if (isBullishTrend && (isAtValueLow || isRSIOversold)) {
+                direction = 'BUY';
+                score = (isAtValueLow ? 1 : 0) + (isRSIOversold ? 1 : 0);
+            } else if (isBearishTrend && (isAtValueHigh || isRSIOverbought)) {
+                direction = 'SELL';
+                score = (isAtValueHigh ? 1 : 0) + (isRSIOverbought ? 1 : 0);
+            }
+
+            const conf = direction === 'NEUTRAL' ? 0 : 40 + (score * 30);
+
+            // MTF Validation: Check 1h trend vs current signal
+            let risk = 'Normal';
+            if (tf !== '1h') {
+                const h1Trend = _ema(S.candles[sym]['1h'].map(c => c.c), 200).pop();
+                const h1Last = S.candles[sym]['1h'].slice(-1)[0]?.c || 0;
+                if (direction === 'BUY' && h1Last < h1Trend) risk = 'High (Counter-Trend)';
+                if (direction === 'SELL' && h1Last > h1Trend) risk = 'High (Counter-Trend)';
+            }
+
+            return { dir: direction, conf, rsi, last, risk };
+        }
+
+        // Returns session % change: first candle close of current day vs latest close
+        function getPctChange(sym, tf) {
+            const cc = S.candles[sym][tf];
+            if (!cc || cc.length < 2) return 0;
+            // Use the open of the oldest candle within the last 24h as session open
+            const now = Date.now();
+            const dayMs = 86400000;
+            const sessionCandles = cc.filter(c => now - c.t <= dayMs);
+            const sessionOpen = sessionCandles.length > 0 ? sessionCandles[0].o : cc[0].o;
+            const latest = cc[cc.length - 1].c;
+            return sessionOpen !== 0 ? ((latest - sessionOpen) / sessionOpen) * 100 : 0;
+        }
+
+        function addToast(msg, type='buy') {
+            const root = document.getElementById('toast-root');
+            const t = document.createElement('div');
+            t.className = `card ${type === 'buy' ? 'sig-card buy' : 'sig-card sell'}`;
+            t.style.cssText = 'margin-bottom:8px; animation: fadeUp 0.3s ease; cursor:pointer;';
+            t.innerHTML = `<div style="font-size:12px; font-weight:bold">${msg}</div>`;
+            t.onclick = () => t.remove();
+            root.appendChild(t);
+            setTimeout(() => t.remove(), 5000);
+        }
+
+        function showSettings() {
+            const root = document.getElementById('modal-root');
+            const providerOp = S.provider === 'polygon' ? 'Polygon.io' : S.provider === 'oanda' ? 'OANDA' : 'Binance';
+            root.innerHTML = `
+                <div class="modal-bg" onclick="this.remove()">
+                    <div class="modal" onclick="event.stopPropagation()">
+                        <h2 style="font-family:var(--fd); color:var(--acc); margin-bottom:10px">API SETTINGS</h2>
+                        <div style="display:flex; gap:8px; margin-bottom:15px">
+                            <button class="btn ${S.provider === 'polygon' ? 'btn-acc' : 'btn-ghost'}" style="flex:1" onclick="S.provider='polygon'; showSettings()">Polygon</button>
+                            <button class="btn ${S.provider === 'oanda' ? 'btn-acc' : 'btn-ghost'}" style="flex:1" onclick="S.provider='oanda'; showSettings()">OANDA</button>
+                            <button class="btn ${S.provider === 'binance' ? 'btn-acc' : 'btn-ghost'}" style="flex:1" onclick="S.provider='binance'; showSettings()">Binance</button>
+                        </div>
+                        <p style="font-size:11px; color:var(--muted); margin-bottom:15px">Configure credentials for ${providerOp}.</p>
+                        ${S.provider === 'polygon' ? `
+                            <label style="font-size:10px; color:var(--muted); font-family:var(--fm)">POLYGON API KEY</label>
+                            <input class="inp" type="password" id="key-inp" value="${S.apiKey}" placeholder="PK-xxxxxxxx...">
+                        ` : S.provider === 'oanda' ? `
+                            <label style="font-size:10px; color:var(--muted); font-family:var(--fm)">OANDA API TOKEN</label>
+                            <input class="inp" type="password" id="token-inp" value="${S.oandaToken}" placeholder="Enter Token...">
+                            <label style="font-size:10px; color:var(--muted); font-family:var(--fm)">OANDA ACCOUNT ID</label>
+                            <input class="inp" type="text" id="acc-inp" value="${S.oandaAccountId}" placeholder="Enter Account ID...">
+                        ` : `
+                            <div style="text-align:center; padding:20px; color:var(--acc); font-family:var(--fm); font-size:12px; border:1px dashed var(--bd); border-radius:8px">
+                                No API Key Required for Binance
+                            </div>
+                        `}
+                        <button class="btn btn-acc" style="width:100%; margin-top:20px" onclick="saveKey()">SAVE & CONNECT</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveKey() {
+            localStorage.setItem('fx_provider', S.provider);
+            if (S.provider === 'polygon') {
+                const key = document.getElementById('key-inp').value;
+                S.apiKey = key;
+                localStorage.setItem('polygon_key', key);
+            } else if (S.provider === 'oanda') {
+                const token = document.getElementById('token-inp').value;
+                const acc = document.getElementById('acc-inp').value;
+                S.oandaToken = token;
+                S.oandaAccountId = acc;
+                localStorage.setItem('oanda_token', token);
+                localStorage.setItem('oanda_account_id', acc);
+            }
+            document.getElementById('modal-root').innerHTML = '';
+            startHybridEngine();
+            render();
+        }
+
+        async function fetchRealPrice(sym) {
+            if (S.provider === 'polygon') {
+                if (!S.apiKey) return null;
+                try {
+                    const response = await fetch(`https://api.polygon.io/v2/last/forex/C.${sym}?apiKey=${S.apiKey}`);
+                    if (!response.ok) throw new Error('Polygon API Error');
+                    const data = await response.json();
+                    return data.lastTrade ? data.lastTrade.p : null;
+                } catch (e) {
+                    console.warn(`Polygon fetch failed for ${sym}:`, e.message);
+                    return null;
+                }
+            } else if (S.provider === 'oanda') {
+                if (!S.oandaToken || !S.oandaAccountId) return null;
+                try {
+                    const response = await fetch(`https://api-fxpractice.oanda.com/v3/accounts/${S.oandaAccountId}/pricing`, {
+                        headers: { 'Authorization': `Bearer ${S.oandaToken}` }
+                    });
+                    if (!response.ok) throw new Error('OANDA API Error');
+                    const data = await response.json();
+                    const pricing = data.prices.find(p => p.instrument === sym);
+                    return pricing ? (parseFloat(pricing.bids[0].p) + parseFloat(pricing.asks[0].p)) / 2 : null;
+                } catch (e) {
+                    console.warn(`OANDA fetch failed for ${sym}:`, e.message);
+                    return null;
+                }
+            } else if (S.provider === 'binance') {
+                try {
+                    const bSym = sym.replace('USD', 'USDT');
+                    const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${bSym}`);
+                    if (!response.ok) throw new Error('Binance API Error');
+                    const data = await response.json();
+                    return data.price ? parseFloat(data.price) : null;
+                } catch (e) {
+                    console.warn(`Binance fetch failed for ${sym}:`, e.message);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        async function pollPrices() {
+            if (S.provider === 'polygon' && !S.apiKey) return;
+            if (S.provider === 'oanda' && (!S.oandaToken || !S.oandaAccountId)) return;
+            if (S.provider === 'binance') {
+                // Binance is always available
+            } else if (S.provider === 'polygon' || S.provider === 'oanda') {
+                // Credentials already checked above
+            }
+
+            S.src = `${S.provider === 'polygon' ? 'Polygon.io' : S.provider === 'oanda' ? 'OANDA' : 'Binance'} (Polling)`;
+            for (const s of SYMS) {
+                const price = await fetchRealPrice(s);
+                if (price) {
+                    S.prices[s].mid = price;
+                    S.prices[s].bid = price - PAIRS[s].sp/2;
+                    S.prices[s].ask = price + PAIRS[s].sp/2;
+
+                    TFs.forEach(tf => {
+                        const cc = S.candles[s][tf];
+                        const last = cc[cc.length-1];
+                        if (Date.now() - last.t > getTfMs(tf)) {
+                            cc.push({ t: Date.now(), o: price, h: price, l: price, c: price, v: 1 });
+                            if(cc.length > 200) cc.shift();
+                        } else {
+                            last.c = price;
+                            last.h = Math.max(last.h, price);
+                            last.l = Math.min(last.l, price);
+                        }
+                    });
+                }
+            }
+            render();
+        }
+
+        function startHybridEngine() {
+            if (S.provider === 'binance' || S.apiKey || (S.oandaToken && S.oandaAccountId)) {
+                pollPrices();
+                setInterval(pollPrices, 15000);
+            }
+        }
+
+        function initChart() {
+            const container = document.getElementById('tv-chart-container');
+            if (!container || typeof LightweightCharts === 'undefined') return;
+            container.innerHTML = '';
+            try {
+                const chart = LightweightCharts.createChart(container, {
+                    width: container.clientWidth,
+                    height: container.clientHeight || 380,
+                    layout: { background: { color: '#0d1525' }, textColor: '#4a6890' },
+                    grid: { vertLines: { color: '#1e3050' }, horzLines: { color: '#1e3050' } },
+                    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                    rightPriceScale: { borderColor: '#1e3050' },
+                    timeScale: { borderColor: '#1e3050', timeVisible: true },
+                });
+                const series = chart.addCandlestickSeries({
+                    upColor: '#06d672', downColor: '#ff2d55',
+                    borderUpColor: '#06d672', borderDownColor: '#ff2d55',
+                    wickUpColor: '#06d672', wickDownColor: '#ff2d55',
+                });
+                const candles = S.candles[S.pair][S.timeframe];
+                const chartData = candles.map(c => ({
+                    time: Math.floor(c.t / 1000),
+                    open: parseFloat(c.o.toFixed(PAIRS[S.pair].d)),
+                    high: parseFloat(c.h.toFixed(PAIRS[S.pair].d)),
+                    low: parseFloat(c.l.toFixed(PAIRS[S.pair].d)),
+                    close: parseFloat(c.c.toFixed(PAIRS[S.pair].d)),
+                }));
+                const seen = new Set();
+                const unique = chartData.filter(d => { if (seen.has(d.time)) return false; seen.add(d.time); return true; });
+                unique.sort((a, b) => a.time - b.time);
+                series.setData(unique);
+                chart.timeScale().fitContent();
+                window.addEventListener('resize', () => {
+                    chart.applyOptions({ width: container.clientWidth });
+                });
+            } catch(e) {
+                container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#4a6890;font-family:var(--fm);font-size:12px">Chart unavailable</div>`;
+            }
+        }
+
+        function updateSessionMonitor() {
+            const now = new Date();
+            const utcH = now.getUTCHours();
+            const utcM = now.getUTCMinutes();
+            const utcMins = utcH * 60 + utcM;
+
+            const sessions = {
+                tokyo:  { start: 0*60,   end: 9*60   },
+                london: { start: 7*60,   end: 16*60  },
+                ny:     { start: 12*60,  end: 21*60  },
+            };
+
+            let activeSessions = 0;
+            const marketOpen = isMarketOpen();
+            for (const [name, s] of Object.entries(sessions)) {
+                const isActive = marketOpen && utcMins >= s.start && utcMins < s.end;
+                const dot = document.getElementById(`dot-${name}`);
+                const lbl = document.getElementById(`sess-${name}`);
+                if (dot) dot.className = 'session-dot' + (isActive ? ' active' : '');
+                if (lbl) lbl.style.color = isActive ? 'var(--acc)' : 'var(--muted)';
+                if (isActive) activeSessions++;
+            }
+
+            const overlap = document.getElementById('session-overlap');
+            if (overlap) {
+                const londonNYOverlap = isMarketOpen() && utcMins >= 12*60 && utcMins < 16*60;
+                overlap.style.display = londonNYOverlap ? 'block' : 'none';
+            }
+            const wb = document.getElementById('weekend-banner');
+            if (wb) wb.style.display = isMarketOpen() ? 'none' : 'block';
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (!app) return;
+
+            const tickerItems = SYMS.map(s => {
+                const p = S.prices[s];
+                const tChg = getPctChange(s, '1h');
+                const tChgColor = tChg >= 0 ? 'var(--buy)' : 'var(--sell)';
+                const tChgStr = (tChg >= 0 ? '+' : '') + tChg.toFixed(2) + '%';
+                return `<div style="display:inline-flex; align-items:center; gap:10px; padding:0 20px; border-right:1px solid var(--bd); font-family:var(--fm); font-size:10px;">
+                    <span>${PAIRS[s].flag} ${s}</span>
+                    <span style="font-weight:bold">${p.bid.toFixed(PAIRS[s].d)}</span>
+                    <span style="color:${tChgColor}">${tChgStr}</span>
+                </div>`;
+            }).join('');
+
+
+
+            let content = '';
+            if (S.tab === 'dashboard') {
+                const p = S.prices[S.pair];
+                const sig = computeSignal(S.pair, S.timeframe);
+                const sigH1 = computeSignal(S.pair, '1h');
+                const sigH4 = computeSignal(S.pair, '4h');
+                const sigD1 = computeSignal(S.pair, '1d');
+
+                // Compute volatility from 20-period std dev of closes
+                const cl = S.candles[S.pair][S.timeframe].map(c => c.c);
+                const sma20 = cl.length >= 20 ? cl.slice(-20).reduce((a,b)=>a+b,0)/20 : cl[cl.length-1];
+                const std20 = cl.length >= 20 ? Math.sqrt(cl.slice(-20).reduce((a,b)=>a+Math.pow(b-sma20,2),0)/20) : 0;
+                const volPips = std20 / PAIRS[S.pair].pip;
+                const volLabel = volPips < 5 ? 'LOW' : volPips < 15 ? 'MODERATE' : 'HIGH';
+                const volColor = volPips < 5 ? 'var(--buy)' : volPips < 15 ? 'var(--amber)' : 'var(--sell)';
+
+                // Trend from EMA200
+                const ema200 = _ema(cl, 200);
+                const lastEma = ema200[ema200.length-1];
+                const lastClose = cl[cl.length-1];
+                const trendLabel = lastClose > lastEma ? 'BULLISH' : lastClose < lastEma ? 'BEARISH' : 'NEUTRAL';
+                const trendColor = trendLabel === 'BULLISH' ? 'var(--buy)' : trendLabel === 'BEARISH' ? 'var(--sell)' : 'var(--muted)';
+
+                // Session % change derived from candle data
+                const chgPctRaw = getPctChange(S.pair, S.timeframe);
+                const chgPct = chgPctRaw.toFixed(2);
+                const chgColor = chgPctRaw >= 0 ? 'var(--buy)' : 'var(--sell)';
+                const chgSign = chgPctRaw >= 0 ? '+' : '';
+
+                // Pair selector grid — all pairs as toggleable cards
+                const pairGrid = SYMS.map(s => {
+                    const pp = S.prices[s];
+                    const psig = computeSignal(s, '1h');
+                    const isActive = S.pair === s;
+                    const pChg = getPctChange(s, '1h');
+                    const pColor = pChg >= 0 ? 'var(--buy)' : 'var(--sell)';
+                    const pChgStr = (pChg >= 0 ? '+' : '') + pChg.toFixed(2) + '%';
+                    return `<div onclick="S.pair='${s}'; render()" style="
+                        background:${isActive ? 'rgba(0,240,200,0.08)' : 'var(--s2)'};
+                        border:1px solid ${isActive ? 'var(--acc)' : 'var(--bd)'};
+                        border-radius:10px; padding:10px 12px; cursor:pointer;
+                        transition:0.15s; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-family:var(--fm); font-size:10px; font-weight:600; color:${isActive ? 'var(--acc)' : 'var(--txt)'}">${PAIRS[s].flag} ${s}</span>
+                            <span style="font-size:9px; color:${psig.dir==='BUY'?'var(--buy)':psig.dir==='SELL'?'var(--sell)':'var(--muted)'}; font-family:var(--fm);">${psig.dir}</span>
+                        </div>
+                        <div style="font-family:var(--fm); font-size:14px; font-weight:700; color:${isActive?'var(--acc)':'var(--txt)'};">${pp.bid.toFixed(PAIRS[s].d)}</div>
+                        <div style="font-family:var(--fm); font-size:9px; color:${pColor}; margin-top:2px;">${pChgStr}</div>
+                    </div>`;
+                }).join('');
+
+                // MTF signal row
+                const mtfRow = [
+                    { tf:'15m', s: computeSignal(S.pair,'15m') },
+                    { tf:'1h',  s: sigH1 },
+                    { tf:'4h',  s: sigH4 },
+                    { tf:'1d',  s: sigD1 },
+                ].map(({tf,s}) => `
+                    <div style="background:var(--s3); border-radius:8px; padding:10px; text-align:center; flex:1;">
+                        <div style="font-size:9px; color:var(--muted); font-family:var(--fm); margin-bottom:4px;">${tf}</div>
+                        <div style="font-size:12px; font-weight:700; font-family:var(--fm); color:${s.dir==='BUY'?'var(--buy)':s.dir==='SELL'?'var(--sell)':'var(--muted)'}">${s.dir}</div>
+                        <div style="font-size:9px; color:var(--muted); margin-top:2px;">${s.conf}%</div>
+                    </div>
+                `).join('');
+
+                content = `
+                    <div class="main">
+                        ${!isMarketOpen() ? `<div style="background:rgba(255,45,85,0.08);border:1px solid rgba(255,45,85,0.25);border-radius:12px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;"><div><div style="font-family:var(--fd);font-size:20px;color:var(--sell);letter-spacing:1px;">MARKET CLOSED</div><div style="font-size:11px;color:var(--muted);font-family:var(--fm);margin-top:4px;">Weekend — Forex resumes Sunday 21:00 UTC</div></div><div style="text-align:right;"><div style="font-size:9px;color:var(--muted);font-family:var(--fm);margin-bottom:4px;letter-spacing:.05em;">OPENS IN</div><div style="font-family:var(--fm);font-size:28px;font-weight:700;color:var(--amber);" id="dashboard-countdown">${getMondayOpenCountdown()}</div></div></div>` : ""}
+
+                        <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;">
+                            ${pairGrid}
+                        </div>
+
+                        <div class="card" style="padding:14px 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                <div>
+                                    <div style="font-family:var(--fd); font-size:26px; letter-spacing:1px; color:var(--acc)">${PAIRS[S.pair].flag} ${S.pair}</div>
+                                    <div style="font-family:var(--fm); font-size:28px; font-weight:700; color:var(--txt); line-height:1">${p.bid.toFixed(PAIRS[S.pair].d)} <span style="font-size:13px; color:${chgColor}">${chgSign}${chgPct}%</span></div>
+                                    <div style="font-size:10px; color:var(--muted); font-family:var(--fm); margin-top:4px;">Spread: ${PAIRS[S.pair].sp} | Src: ${S.src}</div>
+                                </div>
+                                <div class="tf-selector">
+                                    ${TFs.map(tf => `<button class="tf-btn ${S.timeframe === tf ? 'active' : ''}" onclick="S.timeframe='${tf}'; render()">${tf}</button>`).join('')}
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+                                <div style="background:var(--s2); border-radius:8px; padding:10px 12px;">
+                                    <div style="font-size:9px; color:var(--muted); font-family:var(--fm); margin-bottom:4px;">TREND (${S.timeframe})</div>
+                                    <div style="font-family:var(--fm); font-size:15px; font-weight:700; color:${trendColor}">${trendLabel}</div>
+                                    <div style="font-size:9px; color:var(--muted); margin-top:2px;">vs EMA200</div>
+                                </div>
+                                <div style="background:var(--s2); border-radius:8px; padding:10px 12px;">
+                                    <div style="font-size:9px; color:var(--muted); font-family:var(--fm); margin-bottom:4px;">VOLATILITY</div>
+                                    <div style="font-family:var(--fm); font-size:15px; font-weight:700; color:${volColor}">${volLabel}</div>
+                                    <div style="font-size:9px; color:var(--muted); margin-top:2px;">${volPips.toFixed(1)} pips σ</div>
+                                </div>
+                                <div style="background:var(--s2); border-radius:8px; padding:10px 12px;">
+                                    <div style="font-size:9px; color:var(--muted); font-family:var(--fm); margin-bottom:4px;">RSI (${S.timeframe})</div>
+                                    <div style="font-family:var(--fm); font-size:15px; font-weight:700; color:${sig.rsi>65?'var(--sell)':sig.rsi<35?'var(--buy)':'var(--txt)'}">${Math.round(sig.rsi)}</div>
+                                    <div style="font-size:9px; color:var(--muted); margin-top:2px;">${sig.rsi>65?'Overbought':sig.rsi<35?'Oversold':'Neutral'}</div>
+                                </div>
+                            </div>
+
+                            <div style="font-size:9px; color:var(--muted); font-family:var(--fm); margin-bottom:6px; letter-spacing:.05em;">MULTI-TIMEFRAME SIGNALS</div>
+                            <div style="display:flex; gap:8px; margin-bottom:14px;">${mtfRow}</div>
+                        </div>
+
+                        <div class="card" style="height:380px; background:var(--s2); padding:0; position:relative; overflow:hidden;">
+                            <div id="tv-chart-container" style="width:100%; height:100%;"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (S.tab === 'signals') {
+                const signalCards = SYMS.map(s => {
+                    const sig = computeSignal(s, S.timeframe);
+                    const isNeutral = sig.dir === 'NEUTRAL';
+                    return `
+                        <div class="sig-card ${isNeutral ? '' : sig.dir.toLowerCase()}">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                                <span style="font-weight:bold">${PAIRS[s].flag} ${s}</span>
+                                <span class="pill ${isNeutral ? '' : (sig.dir === 'BUY' ? 'pill-buy' : 'pill-sell')}" style="${isNeutral ? 'background:rgba(100,100,100,0.2); color:var(--muted)' : ''}">${sig.dir}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px">
+                                <div style="font-size:11px; color:var(--muted)">Confidence: ${sig.conf}%</div>
+                                <div style="font-size:9px; font-family:var(--fm); color:${sig.risk === 'Normal' ? 'var(--muted)' : 'var(--sell)'}">${sig.risk}</div>
+                            </div>
+                            <div class="conf-bar"><div class="conf-fill" style="width:${sig.conf}%; background:var(--acc)"></div></div>
+                            <div style="margin-top:10px; font-family:var(--fm); font-size:10px; display:flex; justify-content:space-between">
+                                <span>RSI: ${Math.round(sig.rsi)}</span>
+                                <span>Price: ${sig.last.toFixed(PAIRS[s].d)}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                content = `
+                    <div class="main">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                            <h1 style="font-family:var(--fd); font-size:22px; color:var(--acc); margin:0">AI SIGNALS</h1>
+                            <div class="tf-selector">
+                                ${TFs.map(tf => `<button class="tf-btn ${S.timeframe === tf ? 'active' : ''}" onclick="S.timeframe='${tf}'; render()"> ${tf}</button>`).join('')}
+                            </div>
+                        </div>
+                        <div class="grid-auto">${signalCards}</div>
+                    </div>
+                `;
+            } else if (S.tab === 'insight') {
+                const pairBriefs = [
+                    { pair:'EUR/USD', dir:'bear', entry:'1.1650–1.1680', sl:'1.1720', t1:'1.1580', t2:'1.1460', sl_pips:'40–70', rr:'~3:1' },
+                    { pair:'GBP/USD', dir:'bear', entry:'1.3450–1.3480', sl:'1.3530', t1:'1.3380', t2:'1.3300', sl_pips:'50–80', rr:'~2:1' },
+                    { pair:'USD/JPY', dir:'neutral', entry:'157.00–157.50', sl:'156.20', t1:'158.80', t2:'159.80', sl_pips:'80', rr:'~2.5:1' },
+                    { pair:'AUD/USD', dir:'neutral', entry:'0.7235–0.7250', sl:'0.7190', t1:'0.7270', t2:'0.7300', sl_pips:'45', rr:'~2:1' },
+                    { pair:'USD/CAD', dir:'bear', entry:'1.3560–1.3590', sl:'1.3640', t1:'1.3500', t2:'1.3430', sl_pips:'50–80', rr:'~2.5:1' },
+                    { pair:'EUR/GBP', dir:'bull', entry:'0.8610', sl:'0.8580', t1:'0.8700', t2:'0.8750', sl_pips:'30', rr:'~3:1' },
+                ].map(b => `
+                    <div class="pair-brief-card">
+                        <div class="pair-brief-header">
+                            <span style="font-weight:600; font-family:var(--fm); font-size:13px">${b.pair}</span>
+                            <span class="brief-badge ${b.dir}">${b.dir === 'bear' ? 'SHORT' : b.dir === 'bull' ? 'LONG' : 'CAUTION'}</span>
+                        </div>
+                        <div class="brief-row"><span>Entry</span><span>${b.entry}</span></div>
+                        <div class="brief-row"><span>Stop loss</span><span style="color:var(--sell)">${b.sl}</span></div>
+                        <div class="brief-row"><span>Target 1</span><span style="color:var(--buy)">${b.t1}</span></div>
+                        <div class="brief-row"><span>Target 2</span><span style="color:var(--buy)">${b.t2}</span></div>
+                        <div class="brief-row"><span>SL pips</span><span>${b.sl_pips}</span></div>
+                        <div class="brief-rr"><span>R:R</span><span style="color:var(--acc)">${b.rr}</span></div>
+                    </div>
+                `).join('');
+
+                content = `
+                    <div class="main">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+                            <h1 class="section-head">✦ AI WEEKLY INSIGHT</h1>
+                            <div style="font-family:var(--fm); font-size:10px; color:var(--muted)">Week of May 19, 2026</div>
+                        </div>
+
+                        <div class="insight-grid">
+                            <div class="insight-met">
+                                <div class="insight-met-label">DXY (Dollar Index)</div>
+                                <div class="insight-met-val" style="color:var(--buy)">~99.10</div>
+                                <div style="font-size:10px; color:var(--muted); margin-top:4px; font-family:var(--fm)">2-week high ↑</div>
+                            </div>
+                            <div class="insight-met">
+                                <div class="insight-met-label">EUR/USD close</div>
+                                <div class="insight-met-val" style="color:var(--sell)">~1.1650</div>
+                                <div style="font-size:10px; color:var(--muted); margin-top:4px; font-family:var(--fm)">Below 1.1710 support</div>
+                            </div>
+                            <div class="insight-met">
+                                <div class="insight-met-label">GBP/USD close</div>
+                                <div class="insight-met-val" style="color:var(--sell)">~1.3450</div>
+                                <div style="font-size:10px; color:var(--muted); margin-top:4px; font-family:var(--fm)">Worst week −2%</div>
+                            </div>
+                            <div class="insight-met">
+                                <div class="insight-met-label">USD/JPY close</div>
+                                <div class="insight-met-val" style="color:var(--amber)">~158.60</div>
+                                <div style="font-size:10px; color:var(--muted); margin-top:4px; font-family:var(--fm)">5-day run, 160 risk</div>
+                            </div>
+                        </div>
+
+                        <div class="week-alert warn">
+                            <strong>USD THEME:</strong> Dollar dominated all pairs — driven by US-China trade optimism (Trump-Xi summit), hawkish Fed repricing, and safe-haven demand from stalled US-Iran talks. Strait of Hormuz closure keeps crude near $100/bbl.
+                        </div>
+                        <div class="week-alert danger">
+                            <strong>TAIL RISK MONDAY:</strong> Any Iran ceasefire headline will reverse USD gains rapidly. Short EUR/USD + GBP/USD + USD/CAD simultaneously = 3% correlated exposure to one macro theme. Run max 2 of 3.
+                        </div>
+
+                        <h2 class="section-head" style="font-size:16px; margin-bottom:12px">PAIR TRADE PLAN</h2>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:10px; margin-bottom:20px">
+                            ${pairBriefs}
+                        </div>
+
+                        <h2 class="section-head" style="font-size:16px; margin-bottom:12px">ASK AI ANALYST</h2>
+                        <div class="ai-ask-bar">
+                            <input class="ai-ask-inp" id="ai-question" placeholder="Ask about any pair, setup, or news event... e.g. 'What happens to EUR/USD if Iran talks succeed?'" onkeydown="if(event.key==='Enter') askAI()">
+                            <button class="btn btn-acc" onclick="askAI()">ASK ↗</button>
+                        </div>
+                        <div class="ai-response-box loading" id="ai-response">Ask a question above to get a real-time AI analysis from Claude...</div>
+                    </div>
+                `;
+            } else if (S.tab === 'risk') {
+                content = `
+                    <div class="main">
+                        <h1 class="section-head">◐ RISK MANAGER</h1>
+
+                        <div class="card" style="margin-bottom:16px">
+                            <h2 style="font-family:var(--fm); font-size:12px; color:var(--acc); margin-bottom:14px; letter-spacing:.05em">POSITION SIZE CALCULATOR</h2>
+                            <div class="rm-row">
+                                <span class="rm-label">Account balance (USD)</span>
+                                <input class="rm-inp" type="number" id="rm-balance" value="10000" min="100" step="100" oninput="calcRM()">
+                            </div>
+                            <div class="rm-row">
+                                <span class="rm-label">Risk per trade</span>
+                                <input class="rm-slider" type="range" id="rm-risk" min="0.5" max="5" step="0.5" value="1" oninput="calcRM()">
+                                <span class="rm-val" id="rm-risk-out">1.0%</span>
+                            </div>
+                            <div class="rm-row">
+                                <span class="rm-label">Stop loss (pips)</span>
+                                <input class="rm-slider" type="range" id="rm-sl" min="5" max="150" step="1" value="30" oninput="calcRM()">
+                                <span class="rm-val" id="rm-sl-out">30 pips</span>
+                            </div>
+                            <div class="rm-row">
+                                <span class="rm-label">Pair type</span>
+                                <select class="rm-inp" id="rm-pair-type" style="flex:1" onchange="calcRM()">
+                                    <option value="10">Major USD pair (EUR/USD, GBP/USD)</option>
+                                    <option value="1">JPY pair (USD/JPY)</option>
+                                </select>
+                            </div>
+                            <div class="rm-row">
+                                <span class="rm-label">Target R:R ratio</span>
+                                <input class="rm-slider" type="range" id="rm-rr" min="1" max="5" step="0.5" value="2" oninput="calcRM()">
+                                <span class="rm-val" id="rm-rr-out">1:2.0</span>
+                            </div>
+                        </div>
+
+                        <div class="rm-metrics">
+                            <div class="rm-met">
+                                <div class="rm-met-lbl">RISK AMOUNT</div>
+                                <div class="rm-met-val" id="rm-risk-amt" style="color:var(--sell)">$100</div>
+                            </div>
+                            <div class="rm-met">
+                                <div class="rm-met-lbl">LOT SIZE</div>
+                                <div class="rm-met-val" id="rm-lot" style="color:var(--acc)">0.33</div>
+                            </div>
+                            <div class="rm-met">
+                                <div class="rm-met-lbl">TP (PIPS)</div>
+                                <div class="rm-met-val" id="rm-tp-pips" style="color:var(--buy)">60</div>
+                            </div>
+                            <div class="rm-met">
+                                <div class="rm-met-lbl">REWARD</div>
+                                <div class="rm-met-val" id="rm-reward" style="color:var(--buy)">$200</div>
+                            </div>
+                        </div>
+
+                        <h2 style="font-family:var(--fm); font-size:12px; color:var(--acc); margin-bottom:14px; letter-spacing:.05em">CORE RULES — WEEK OF MAY 19</h2>
+                        <div class="rule-grid">
+                            <div class="rule-box">
+                                <div class="rule-title">MAX 1% RISK PER TRADE</div>
+                                <div class="rule-desc">With 5 setups active this week, max total open risk = 4–5%. Never exceed, regardless of conviction.</div>
+                            </div>
+                            <div class="rule-box">
+                                <div class="rule-title">MINIMUM 1:2 R:R BEFORE ENTRY</div>
+                                <div class="rule-desc">If stop vs realistic target does not offer 1:2, skip the trade. No exceptions — especially GBP/USD.</div>
+                            </div>
+                            <div class="rule-box">
+                                <div class="rule-title">NO TRADES 30 MIN AROUND NEWS</div>
+                                <div class="rule-desc">FOMC minutes (Wed), Fed speakers (Tue), any Iran/Hormuz headline. Spreads widen, stops get hunted.</div>
+                            </div>
+                            <div class="rule-box">
+                                <div class="rule-title">USD/JPY HARD CAP AT 159.50</div>
+                                <div class="rule-desc">If holding USD/JPY long approaching 159.50, take profit or move stop to breakeven. Do not approach the 160 MoF zone.</div>
+                            </div>
+                            <div class="rule-box">
+                                <div class="rule-title">SCALE OUT AT TARGET 1</div>
+                                <div class="rule-desc">Close 50% at T1, move stop to breakeven. Let remainder run to T2. Locks gains, removes emotion.</div>
+                            </div>
+                            <div class="rule-box">
+                                <div class="rule-title">WEEKLY DRAWDOWN LIMIT: −3%</div>
+                                <div class="rule-desc">If account is down 3% on the week, stop trading until next Monday. Prevents revenge trading.</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content = `<div class="main"><h1 style="font-family:var(--fd); color:var(--acc)">${S.tab.toUpperCase()}</h1><div class="card">Coming soon in v9.0</div></div>`;
+            }
+
+            app.innerHTML = `
+                <div class="header">
+                    <div class="logo-box">FX</div>
+                    <div style="font-family:var(--fd); font-size:18px; letter-spacing:1px; color:var(--txt)">
+                        FOREX <span style="color:var(--acc)">INSIGHT AI</span>
+                    </div>
+                    <div style="flex:1"></div>
+                    <button class="btn btn-ghost" style="margin-right:8px" onclick="showSettings()">⚙ SETTINGS</button>
+                    <button class="btn btn-ghost" style="min-width:36px" title="${S.theme==='dark'?'Switch to Light':'Switch to Dark'}" onclick="S.theme=S.theme==='dark'?'lm':'dark'; document.body.className=S.theme; render()">
+                        ${S.theme === 'dark' ? '☀' : '🌙'}
+                    </button>
+                </div>
+                <div class="ticker-wrap">
+                    <div class="ticker-inner">${tickerItems}${tickerItems}</div>
+                </div>
+                <div class="body">
+                    <div class="sidebar">
+                        <button class="nav-item ${S.tab === 'dashboard' ? 'active' : ''}" onclick="S.tab='dashboard'; render()">◈ Dashboard</button>
+                        <button class="nav-item ${S.tab === 'signals' ? 'active' : ''}" onclick="S.tab='signals'; render()">◎ Signals</button>
+                        <button class="nav-item ${S.tab === 'insight' ? 'active' : ''}" onclick="S.tab='insight'; render()">✦ AI Insight</button>
+                        <button class="nav-item ${S.tab === 'risk' ? 'active' : ''}" onclick="S.tab='risk'; render()">◐ Risk Manager</button>
+
+                        <div class="session-monitor">
+                            <div style="font-size:9px; color:var(--muted); font-family:var(--fm); margin-bottom:8px; text-align:center">TRADING SESSIONS (UTC)</div>
+                            <div class="session-item">
+                                <span class="session-label" id="sess-tokyo">TOKYO</span>
+                                <div class="session-dot" id="dot-tokyo"></div>
+                            </div>
+                            <div class="session-item">
+                                <span class="session-label" id="sess-london">LONDON</span>
+                                <div class="session-dot" id="dot-london"></div>
+                            </div>
+                            <div class="session-item">
+                                <span class="session-label" id="sess-ny">NEW YORK</span>
+                                <div class="session-dot" id="dot-ny"></div>
+                            </div>
+                            <div id="session-overlap" style="font-size:8px; color:var(--acc); font-family:var(--fm); text-align:center; margin-top:8px; display:none">POWER HOUR ACTIVE</div>
+                            <div id="weekend-banner" style="display:none; margin-top:8px; background:rgba(255,45,85,0.1); border:1px solid rgba(255,45,85,0.25); border-radius:6px; padding:8px; text-align:center;"><div style="font-size:9px; color:var(--sell); font-family:var(--fm); font-weight:bold;">MARKET CLOSED</div><div style="font-size:8px; color:var(--muted); font-family:var(--fm); margin-top:2px;">Opens Sun 21:00 UTC</div><div style="font-size:11px; color:var(--amber); font-family:var(--fm); margin-top:4px; font-weight:bold;" id="sidebar-countdown">--:--:--</div></div>
+                        </div>
+
+                        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--bd); font-size:9px; color:var(--muted); font-family:var(--fm); text-align:center">FOREX INSIGHT AI v9.0</div>
+                    </div>
+                    ${content}
+                </div>
+                <div class="footer">
+                    ${isMarketOpen() ? '<span style="color:var(--buy)">● LIVE</span>' : '<span style="color:var(--sell)">● MARKET CLOSED</span>'} &nbsp; Forex Insight AI v9.0 Professional | Data: ${S.src}${!isMarketOpen() ? ' &nbsp;|&nbsp; Opens in <span id="market-countdown" style="color:var(--amber);font-family:var(--fm)">' + getMondayOpenCountdown() + '</span>' : ''}
+                </div>
+            `;
+
+            if (S.tab === 'dashboard') {
+                initChart();
+            }
+            if (S.tab === 'risk') {
+                setTimeout(calcRM, 0);
+            }
+            updateSessionMonitor();
+        }
+
+        function isMarketOpen() {
+            const now = new Date();
+            const day = now.getUTCDay();
+            const utcMins = now.getUTCHours() * 60 + now.getUTCMinutes();
+            if (day === 6) return false;
+            if (day === 0 && utcMins < 21 * 60) return false;
+            if (day === 5 && utcMins >= 22 * 60) return false;
+            return true;
+        }
+
+        function getMondayOpenCountdown() {
+            const now = new Date();
+            const day = now.getUTCDay();
+            const daysToSun = day === 0 ? 0 : 7 - day;
+            const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToSun, 21, 0, 0, 0));
+            if (now >= target) target.setUTCDate(target.getUTCDate() + 7);
+            const diff = Math.max(0, target - now);
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        }
+
+        function _simTick() {
+            if (!isMarketOpen()) {
+                const ct = getMondayOpenCountdown();
+                ['market-countdown','dashboard-countdown','sidebar-countdown'].forEach(function(id) {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = ct;
+                });
+                return;
+            }
+            if (S.src === 'Polygon.io (Polling)') return;
+            SYMS.forEach(s => {
+                const p = S.prices[s];
+                const noise = (Math.random() - 0.5) * PAIRS[s].pip * 2;
+                p.mid += noise;
+                p.bid = p.mid - PAIRS[s].sp/2;
+                p.ask = p.mid + PAIRS[s].sp/2;
+
+                TFs.forEach(tf => {
+                    const cc = S.candles[s][tf];
+                    const last = cc[cc.length-1];
+                    if (Date.now() - last.t > getTfMs(tf)) {
+                        cc.push({ t: Date.now(), o: p.mid, h: p.mid, l: p.mid, c: p.mid, v: 1 });
+                        if(cc.length > 200) cc.shift();
+                    } else {
+                        last.c = p.mid;
+                        last.h = Math.max(last.h, p.mid);
+                        last.l = Math.min(last.l, p.mid);
+                    }
+                });
+            });
+            render();
+        }
+
+        async function askAI() {
+            const q = document.getElementById('ai-question');
+            const box = document.getElementById('ai-response');
+            if (!q || !box || !q.value.trim()) return;
+            const question = q.value.trim();
+            box.className = 'ai-response-box loading';
+            box.textContent = 'Analysing markets and news... please wait...';
+
+            const context = `You are a professional forex analyst. The current market context for week of May 19, 2026:
+- USD is the dominant major this week, DXY near 99.10 (2-week high)
+- EUR/USD broke below 1.1710 support, trading near 1.1650. Bearish bias.
+- GBP/USD had worst week in months (−2%), broke below 1.3450 trendline. Double pressure: UK political instability + USD demand.
+- USD/JPY rallied 5 consecutive days to 158.60. BOJ hawkish but yen still weak. 160.00 = MoF intervention red line.
+- AUD/USD rejected at 0.7270 resistance, still in medium-term uptrend.
+- USD/CAD trending lower toward 1.3500 — oil near $100/bbl boosting CAD.
+- EUR/GBP ranging 0.8600–0.8750. EUR outperforming GBP.
+- Key macro themes: stalled US-Iran talks / Strait of Hormuz closure driving oil, US-China trade optimism after Trump-Xi summit May 14-15, hawkish Fed repricing (no rate cuts expected in 2026).
+- Key risk events this week: Fed speakers Tue, FOMC minutes Wed, US jobless claims Thu, Iran geopolitical wildcard daily.
+
+Answer the trader's question concisely and practically. Be direct about risk. Max 150 words.`;
+
+            try {
+                const res = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        system: context,
+                        messages: [{ role: 'user', content: question }]
+                    })
+                });
+                const data = await res.json();
+                const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
+                box.className = 'ai-response-box';
+                box.innerHTML = text.replace(/\n/g, '<br>');
+            } catch(e) {
+                box.className = 'ai-response-box';
+                box.textContent = 'Error reaching AI. Check your connection and try again.';
+            }
+        }
+
+        function calcRM() {
+            const bal = parseFloat(document.getElementById('rm-balance')?.value) || 10000;
+            const riskPct = parseFloat(document.getElementById('rm-risk')?.value) || 1;
+            const sl = parseFloat(document.getElementById('rm-sl')?.value) || 30;
+            const rr = parseFloat(document.getElementById('rm-rr')?.value) || 2;
+            const pipValPerLot = parseFloat(document.getElementById('rm-pair-type')?.value) || 10;
+
+            const riskAmt = bal * (riskPct / 100);
+            const lotSize = riskAmt / (sl * pipValPerLot);
+            const tpPips = sl * rr;
+            const reward = riskAmt * rr;
+
+            const riskOut = document.getElementById('rm-risk-out');
+            const slOut = document.getElementById('rm-sl-out');
+            const rrOut = document.getElementById('rm-rr-out');
+            const riskAmtEl = document.getElementById('rm-risk-amt');
+            const lotEl = document.getElementById('rm-lot');
+            const tpEl = document.getElementById('rm-tp-pips');
+            const rewEl = document.getElementById('rm-reward');
+
+            if(riskOut) riskOut.textContent = riskPct.toFixed(1) + '%';
+            if(slOut) slOut.textContent = sl + ' pips';
+            if(rrOut) rrOut.textContent = '1:' + rr.toFixed(1);
+            if(riskAmtEl) riskAmtEl.textContent = '$' + Math.round(riskAmt);
+            if(lotEl) lotEl.textContent = lotSize.toFixed(2);
+            if(tpEl) tpEl.textContent = Math.round(tpPips);
+            if(rewEl) rewEl.textContent = '$' + Math.round(reward);
+        }
+
+        initData();
+        document.body.className = S.theme;
+        startHybridEngine();
+        render();
+        setInterval(_simTick, 1000);
+
+    </script>
+</body>
+</html>
